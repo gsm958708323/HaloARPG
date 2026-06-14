@@ -5,7 +5,7 @@ public class InputSystem : ISystem
     public override void Tick(float delteTime)
     {
         base.Tick(delteTime);
-        world.Query<InputComponent>((input) =>
+        world.Query<InputComponent>((entity, input) =>
         {
             input.Clear();
             // 移动

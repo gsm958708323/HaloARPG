@@ -2,8 +2,7 @@ using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
 {
-    [SerializeField] private GameObject _playerPrefab;
-    [SerializeField] private GameObject _enemyPrefab;
+    [SerializeField] private EntityConfig _playerConfig;
 
     private World world;
     private ViewEntityManager viewManager;
@@ -13,12 +12,14 @@ public class GameBootstrap : MonoBehaviour
         var eventBus = new EventBus();
         world = new World(eventBus);
         
-        world.RegisterSystem(new InputSystem(), 1);
-        world.RegisterSystem(new StateSystem(), 2);
-        world.RegisterSystem(new MovementSystem(), 3);
+        world.RegisterSystem(new InputSystem(), 0);
+        world.RegisterSystem(new ComboSystem(), 10);
+        world.RegisterSystem(new DodgeSystem(), 20);
+        world.RegisterSystem(new StateSystem(), 0);
+        world.RegisterSystem(new MovementSystem(), 10);
 
-        viewManager = new ViewEntityManager(world, _playerPrefab);
-        EntityFactory.CreatePlayer(world, Vector3.zero);
+        viewManager = new ViewEntityManager(world, _playerConfig);
+        EntityFactory.CreatePlayer(world, Vector3.zero, _playerConfig);
     }
 
     void Update()
@@ -29,7 +30,7 @@ public class GameBootstrap : MonoBehaviour
 
     void OnDestroy()
     {
-        viewManager.Shutdown();
+        viewManager.Destroy();
         world.Destroy();
     }
 }

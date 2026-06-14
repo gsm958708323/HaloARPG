@@ -133,7 +133,7 @@ public class World
     // ============================================================
     //  Query — 查询拥有指定 Component 组合的所有 Entity
     // ============================================================
-    public void Query<T1>(Action<T1> action) where T1 : class, IComponent
+    public void Query<T1>(Action<Entity,T1> action) where T1 : class, IComponent
     {
         var type1 = typeof(T1);
         if (!stores.TryGetValue(type1, out var store1)) return;
@@ -141,11 +141,13 @@ public class World
         {
             int id = item.Key;
             if (!aliveEntities.Contains(id)) continue;
-            action((T1)item.Value);
+
+            var entity = new Entity(id, entityVersions[id]);
+            action(entity, (T1)item.Value);
         }
     }
 
-    public void Query<T1, T2>(Action<T1, T2> action)
+    public void Query<T1, T2>(Action<Entity, T1, T2> action)
         where T1 : class, IComponent
         where T2 : class, IComponent
     {
@@ -164,11 +166,12 @@ public class World
             int id = kvp.Key;
             if (!aliveEntities.Contains(id)) continue;
             if (!other.ContainsKey(id)) continue;
-            action((T1)store1[id], (T2)store2[id]);
+            var entity = new Entity(id, entityVersions[id]);
+            action(entity, (T1)store1[id], (T2)store2[id]);
         }
     }
 
-    public void Query<T1, T2, T3>(Action<T1, T2, T3> action)
+    public void Query<T1, T2, T3>(Action<Entity, T1, T2, T3> action)
         where T1 : class, IComponent
         where T2 : class, IComponent
         where T3 : class, IComponent
@@ -193,7 +196,8 @@ public class World
             if (!store1.ContainsKey(id)) continue;
             if (!store2.ContainsKey(id)) continue;
             if (!store3.ContainsKey(id)) continue;
-            action((T1)store1[id], (T2)store2[id], (T3)store3[id]);
+            var entity = new Entity(id, entityVersions[id]);
+            action(entity, (T1)store1[id], (T2)store2[id], (T3)store3[id]);
         }
     }
 

@@ -5,14 +5,14 @@ using UnityEngine;
 public class ViewEntityManager
 {
     private readonly World _world;
-    GameObject playerGo;
+    GameObject playerPrefab;
     private readonly Dictionary<int, ViewEntity> _map = new(); // entityId → ViewEntity
     private readonly List<ViewEntity> _all = new();
 
-    public ViewEntityManager(World world, GameObject playerGo)
+    public ViewEntityManager(World world, EntityConfig playerConfig)
     {
         _world = world;
-        this.playerGo = playerGo;
+        playerPrefab = playerConfig.Prefab;
         _world.Events.Subscribe<EntityCreatedEvent>(OnEntityCreated);
         _world.Events.Subscribe<EntityDestroyedEvent>(OnEntityDestroyed);
     }
@@ -43,7 +43,7 @@ public class ViewEntityManager
             _all[i].Update(deltaTime);
     }
 
-    public void Shutdown()
+    public void Destroy()
     {
         foreach (var ve in _all)
             ve.Destroy();
@@ -54,7 +54,8 @@ public class ViewEntityManager
     // --- 事件响应 ---
     private void OnEntityCreated(EntityCreatedEvent evt)
     {
-        var ve = EntityFactory.CreateViewPlayer(_world, evt.Entity, playerGo);
+        GameObject go = GameObject.Instantiate(playerPrefab);
+        var ve = EntityFactory.CreateViewPlayer(_world, evt.Entity, go);
         _map[evt.Entity.Id] = ve;
         _all.Add(ve);
     }

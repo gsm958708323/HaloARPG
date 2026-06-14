@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23827f8241fd1694facff6af97b6fbcf, type: 3}
+  m_Name: playerComboRoot
+  m_EditorClassIdentifier: 
+  treeId: root
+  nodes:
+  - nodeId: light_1
+    animationClip: 
+    duration: 0.6
+    inputWindowStart: 0.25
+    inputWindowEnd: 0.5
+    cancelWindowStart: 0.3
+    cancelWindowEnd: 0.55
+    edges:
+    - requiredInput: 0
+      targetNodeId: light_2
+      priority: 0
+    - requiredInput: 1
+      targetNodeId: launcher
+      priority: 1
+    isFinisher: 0
+    recoveryLockTime: 0
+  - nodeId: light_2
+    animationClip: 
+    duration: 0.7
+    inputWindowStart: 0.3
+    inputWindowEnd: 0.55
+    cancelWindowStart: 0.35
+    cancelWindowEnd: 0.6
+    edges:
+    - requiredInput: 0
+      targetNodeId: light_3
+      priority: 0
+    - requiredInput: 1
+      targetNodeId: slam
+      priority: 1
+    isFinisher: 0
+    recoveryLockTime: 0
+  - nodeId: light_3
+    animationClip: 
+    duration: 0.9
+    inputWindowStart: 0
+    inputWindowEnd: 0
+    cancelWindowStart: 0
+    cancelWindowEnd: 0
+    edges: []
+    isFinisher: 1
+    recoveryLockTime: 0.3
+  - nodeId: heavy_1
+    animationClip: 
+    duration: 0.8
+    inputWindowStart: 0.4
+    inputWindowEnd: 0.7
+    cancelWindowStart: 0.5
+    cancelWindowEnd: 0.75
+    edges:
+    - requiredInput: 1
+      targetNodeId: heavy_2
+      priority: 0
+    isFinisher: 0
+    recoveryLockTime: 0
+  - nodeId: heavy_1
+    animationClip: 
+    duration: 0.8
+    inputWindowStart: 0.4
+    inputWindowEnd: 0.7
+    cancelWindowStart: 0.5
+    cancelWindowEnd: 0.75
+    edges: []
+    isFinisher: 0
+    recoveryLockTime: 0
+  - nodeId: launcher
+    animationClip: 
+    duration: 0.8
+    inputWindowStart: 0
+    inputWindowEnd: 0
+    cancelWindowStart: 0
+    cancelWindowEnd: 0
+    edges: []
+    isFinisher: 1
+    recoveryLockTime: 0.2
