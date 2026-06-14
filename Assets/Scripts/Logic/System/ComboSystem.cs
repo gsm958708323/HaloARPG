@@ -11,16 +11,16 @@
             // ====== 帧头一致性检查 ======
             if (combo.InCombo && state.Current != TopState.InCombo)
             {
-                // 被外部打断（受击/死亡等），清理连招数据
+                // 被外部打断（受击/死亡/闪避等），清理连招数据
+                // DeactivateHitbox(entity);
                 CleanupCombo(combo);
                 return;
             }
 
             if (!combo.InCombo && state.Current == TopState.InCombo)
             {
-                // 异常防御
-                state.RequestChange(TopState.Locomotion,
-                    StatePriorities.Locomotion, "Combo:Fallback");
+                // 异常防御：状态显示在连招但没有节点数据
+                state.RequestExit(TopState.Locomotion, "Combo:Fallback");
                 return;
             }
 
@@ -77,6 +77,11 @@
         var node = combo.CurrentNode;
         float t = combo.NodeTimer;
 
+        //   // 驱动 Hitbox
+        //     UpdateHitbox(entity, node, t);
+        //     // 驱动定时触发效果
+        //     ProcessTimedActions(entity, node, t);
+
         // 1. 取消窗口 → 闪避
         if (t >= node.cancelWindowStart && t <= node.cancelWindowEnd)
         {
@@ -115,12 +120,11 @@
         float totalDuration = node.isFinisher
             ? node.duration + node.recoveryLockTime
             : node.duration;
-
         if (t >= totalDuration)
         {
+            // DeactivateHitbox(entity);
             CleanupCombo(combo);
-            state.RequestChange(TopState.Locomotion,
-                StatePriorities.Locomotion, "Combo:Timeout");
+            state.RequestExit(TopState.Locomotion, "Combo:Timeout");
         }
     }
 
@@ -130,13 +134,17 @@
     {
         combo.CurrentNode = node;
         combo.NodeTimer = 0f;
-
         if (state.Current != TopState.InCombo)
         {
             state.RequestChange(TopState.InCombo,
                 StatePriorities.InCombo, "Combo:Enter");
         }
-
+        // // 重置定时触发标记
+        // if (node.timedActions != null)
+        // {
+        //     foreach (var action in node.timedActions)
+        //         action.triggered = false;
+        // }
         world.Events.Publish(new ComboNodeChangedEvent
         {
             Entity = entity,

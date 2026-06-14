@@ -5,56 +5,62 @@
         world.Query<StateComponent>((entity, state) =>
         {
             state.StateTimer += deltaTime;
-
             if (state.PendingRequests.Count == 0) return;
-
-            // 找最高优先级
-            StateChangeRequest winner = null;
+            // 分离 Interrupt 和 Exit
+            StateChangeRequest bestInterrupt = null;
+            StateChangeRequest exit = null;
             foreach (var req in state.PendingRequests)
             {
-                if (winner == null || req.Priority > winner.Priority)
-                    winner = req;
+                if (req.Kind == StateRequestKind.Exit)
+                {
+                    exit = req;  // 后到的 Exit 覆盖前者
+                }
+                else
+                {
+                    if (bestInterrupt == null || req.Priority > bestInterrupt.Priority)
+                        bestInterrupt = req;
+                }
             }
-
-            // 裁决
-            if (winner != null && CanTransition(state, winner))
+            // 1. Interrupt 优先：priority 够高才能抢占
+            if (bestInterrupt != null
+                && bestInterrupt.TargetState != state.Current
+                && bestInterrupt.Priority >= state.CurrentPriority)
             {
-                ExecuteTransition(entity, state, winner);
+                ExecuteTransition(entity, state,
+                    bestInterrupt.TargetState, bestInterrupt.Source);
             }
-            #if UNITY_EDITOR
-            else if (winner != null)
+            // 2. 否则处理 Exit：无条件允许（拥有者宣告完成）
+            else if (exit != null && exit.TargetState != state.Current)
+            {
+                ExecuteTransition(entity, state, exit.TargetState, exit.Source);
+            }
+#if UNITY_EDITOR
+            else if (bestInterrupt != null && bestInterrupt.TargetState != state.Current)
             {
                 UnityEngine.Debug.Log(
-                    $"[State] {entity} REJECTED {winner} " +
+                    $"[State] {entity} REJECTED interrupt {bestInterrupt} " +
                     $"(current={state.Current}, pri={state.CurrentPriority})");
             }
-            #endif
-
+#endif
             state.PendingRequests.Clear();
         });
     }
-
-    private bool CanTransition(StateComponent state, StateChangeRequest req)
-    {
-        if (req.TargetState == state.Current)
-            return false;   // 不重复切到相同状态
-        return req.Priority >= state.CurrentPriority;
-    }
-
-    private void ExecuteTransition(Entity entity, StateComponent state, StateChangeRequest req)
+    private void ExecuteTransition(Entity entity, StateComponent state,
+        TopState target, string source)
     {
         var from = state.Current;
         state.Previous = from;
-        state.Current = req.TargetState;
+        state.Current = target;
         state.StateTimer = 0f;
-        state.CurrentPriority = req.Priority;
-
+        state.CurrentPriority = StatePriorities.Of(target);  // 用规范优先级
+        UnityEngine.Debug.Log(
+            $"[State] {entity} TRANSITION {from} -> {target} by {source}");
         world.Events.Publish(new StateChangedEvent
         {
             Entity = entity,
             From = from,
-            To = req.TargetState,
-            Source = req.Source
+            To = target,
+            Source = source
         });
     }
 }

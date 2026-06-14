@@ -28,8 +28,7 @@ public class DodgeSystem : ISystem
             // 闪避结束
             if (state.StateTimer >= DodgeDuration)
             {
-                state.RequestChange(TopState.Locomotion,
-                    StatePriorities.Locomotion, "Dodge:End");
+                state.RequestExit(TopState.Locomotion, "Dodge:End");
             }
         });
     }
